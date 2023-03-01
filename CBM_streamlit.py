@@ -8,16 +8,6 @@ import pytorch_lightning as pl
 device = torch.device("cpu")
 
 # name of concepts and  range of values
-# concepts = {
-#     "subtlety":[1.0,5.0],
-#     "calcification":[1.0,6.0],
-#     "margin":[1.0,5.0],
-#     "lobulation":[1.0,5.0],
-#     "spiculation":[1.0,5.0],
-#     "diameter":[2.0,38.0],
-#     "texture":[1.0,5.0],
-#     "sphericity":[1.0,5.0]
-# }
 concepts = [
     ["subtlety",[1.0,5.0]],
     ["calcification",[1.0,6.0]],
@@ -41,10 +31,13 @@ def process_sample(sample):
     return sample[0]
 
 # # load the concept regression model
-concept_model = conceptModelFinetune().to(device)
-
-concept_model.load_state_dict(torch.load("ConRad/weights/concept_finetune_4.pt"))
-concept_model.eval()
+@st.cache_resource
+def load_model():
+    concept_model = conceptModelFinetune().to(device)
+    concept_model.load_state_dict(torch.load("ConRad/weights/concept_finetune_4.pt"))
+    concept_model.eval()
+    return concept_model
+concept_model = load_model()
 
 
 with open("example_data/samples_fold_4.pkl", "rb") as f:
@@ -90,10 +83,6 @@ with col2:
         concepts_edit.append(val)
 
 with col3:
-    # st.title("Biomarkers")
-    # concepts_dict = dict(zip(concepts,pred_scaled[0]))
-    # concepts_edit = []
-    # print(concept_dict)
     for c in concepts[4:]:
         name = c[0]
         val_range = c[1]
@@ -110,3 +99,8 @@ with col4:
     st.write(mal_dict[clf.predict(scaler.transform([concepts_edit]))[0]])
     st.text("Label:")
     st.write(mal_dict[np.array(target_label).item()])
+
+with st.expander("See details"):
+    st.write("A CNN regression model predicts biomarkers which are passed to a linear SVM for malignancy classification.")
+    st.write("Implementation details can be found in the accompanying GitHub repository https://github.com/lenbrocki/ConRad.")
+    st.write("The meaning of the biomarker values is explaind here: https://pylidc.github.io/annotation.html")
