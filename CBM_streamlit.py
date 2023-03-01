@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 from ConRad.conceptModelFinetune import conceptModelFinetune
 import torch
+import pytorch_lightning as pl
 
 device = torch.device("cpu")
 
