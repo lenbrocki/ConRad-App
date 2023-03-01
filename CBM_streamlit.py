@@ -90,7 +90,6 @@ with col3:
         # st.write(weights[name])
         concepts_edit.append(val)
 
-print(dict(zip(concept_names, concepts_edit)))
 with col4:
     # st.title("Malignancy")
     for i in range(7):
