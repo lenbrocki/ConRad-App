@@ -1,9 +1,8 @@
 import pytorch_lightning as pl
-from torch.utils.data import random_split, DataLoader
+from torch.utils.data import DataLoader
 from ConRad.LIDC_dataset import LIDC
 from sklearn.model_selection import StratifiedKFold
-from sklearn import model_selection, preprocessing
-import sys
+from sklearn import preprocessing
 import torch
 import numpy as np
 

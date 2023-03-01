@@ -1,19 +1,11 @@
 # with this model we predict concepts from the LIDC dataset
 # concepts are: diameter, spiculation, lobulation, margin
 
-from pytorch_lightning import LightningModule, Trainer
+from pytorch_lightning import LightningModule
 
 import torch
-import numpy as np
 from torch import nn
-from torch.nn import functional as F
-from torchmetrics import Accuracy
-from torchvision import transforms
-import random
-
-
-from torch.optim.lr_scheduler import StepLR, MultiStepLR, ReduceLROnPlateau
-
+from torch.optim.lr_scheduler import MultiStepLR
 import torchvision.models as models
 
 
