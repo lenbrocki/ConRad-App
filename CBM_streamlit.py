@@ -24,12 +24,6 @@ col1, col2, col3, col4 = st.columns(4, gap="large")
 mal_dict= {1: "malignant", 0: "benign"}
 
 
-def process_sample(sample):
-    sample = np.array(sample)
-    sample = sample - sample.min()
-    sample = sample/sample.max()
-    return sample[0]
-
 # # load the concept regression model
 @st.cache_resource
 def load_model():
@@ -39,20 +33,36 @@ def load_model():
     return concept_model
 concept_model = load_model()
 
+@st.cache_data(max_entries=100)
+def load_data():
+    with open("example_data/samples_fold_4.pkl", "rb") as f:
+        samples = pickle.load(f)
+    with open("example_data/scaler_fold_4.pkl", "rb") as f:
+        scaler = pickle.load(f)
+    with open("example_data/concept_labels_fold_4.pkl", "rb") as f:
+        concept_labels = pickle.load(f)
+    with open("example_data/target_labels_fold_4.pkl", "rb") as f:
+        target_labels = pickle.load(f)
+    with open("example_data/svm_linear_fold_4.pkl", "rb") as f:
+        clf = pickle.load(f)
+    return samples, scaler, concept_labels, target_labels, clf
+samples, scaler, concept_labels, target_labels, clf = load_data()
 
-with open("example_data/samples_fold_4.pkl", "rb") as f:
-    samples = pickle.load(f)
-with open("example_data/scaler_fold_4.pkl", "rb") as f:
-    scaler = pickle.load(f)
-with open("example_data/concept_labels_fold_4.pkl", "rb") as f:
-    concept_labels = pickle.load(f)
-with open("example_data/target_labels_fold_4.pkl", "rb") as f:
-    target_labels = pickle.load(f)
-with open("example_data/svm_linear_fold_4.pkl", "rb") as f:
-    clf = pickle.load(f)
+@st.cache_data
+def process_samples(_samples):
+    samples_p = []
+    for s in _samples:
+        sample = np.array(s)
+        sample = sample - sample.min()
+        sample = sample/sample.max()
+        samples_p.append(sample[0])
+    return samples_p
+
+# for plotting we use the processed samples
+samples_p = process_samples(samples)
 
 concept_names = [i[0] for i in concepts]
-weights = dict(zip(concept_names, clf.coef_[0]))
+# weights = dict(zip(concept_names, clf.coef_[0]))
 
 with col1:
     # st.title("Samples")
@@ -60,13 +70,16 @@ with col1:
     for i in range(5):
         st.text("")
     choice = st.selectbox("Examples", np.arange(0,20))
+    sample_p = samples_p[choice]
     sample = samples[choice]
     target_label = target_labels[choice]
     concept_label = concept_labels[choice]
-    st.image(process_sample(sample))
+    st.image(sample_p)
+
 
 pred = concept_model(sample.to(device).unsqueeze(0)).cpu().detach().numpy()
 pred_scaled = scaler.inverse_transform(pred)
+
 
 
 # st.title("Biomarkers")
@@ -76,7 +89,6 @@ with col2:
     # print(concept_dict)
     for c in concepts[:4]:
         name = c[0]
-        print(name)
         val_range = c[1]
         val = st.slider(name, value=concepts_dict[name].item(), min_value=val_range[0], max_value=val_range[1], step=0.5)
         # st.write(weights[name])
